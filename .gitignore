@@ -1,0 +1,18 @@
+# web
+web/node_modules/
+web/client/dist/
+web/.vite/
+*.log
+
+# android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.iml
+.kotlin/
+
+# misc
+.DS_Store
+Thumbs.db
