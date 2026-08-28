@@ -48,6 +48,24 @@
   بيبني أمر التشغيل (Xmx/classpath/natives/arguments) وبيبعته لـ Termux بـ `com.termux.RUN_COMMAND`.
   - ثبّت Termux من **F-Droid** + `pkg install openjdk-17`.
   - لو Termux مش موجود: العميل بيحفظ أمر التشغيل كامل في `reports/last-launch.txt` ويعرض رسالة واضحة.
+- **ماينكرافت بيدروك (بدون روت)** — بيئة بيدروك معزولة لكل بروفايل:
+  ```
+  profiles/<id>/bedrock/
+  ├── behavior_packs/<uuid>/   باكات سلوك معزولة
+  ├── resource_packs/<uuid>/   باكات موارد معزولة
+  ├── templates/               world templates
+  ├── addons/                  ملفات .mcaddon/.mcpack الأصلية
+  ├── config/game.json         إعدادات الباكات (uuids + isolated:true)
+  └── packs.json               سجل الباكات (مفعّل/معطّل)
+  ```
+  - **شاشة Packs**: رفع `.mcaddon` / `.mcpack` / `.mpack` — العميل بيقرأ الـ manifest من جوه،
+    بيحدد النوع (behavior/resource/template) من الـ modules، وبيفك الباك جوه البيئة المعزولة.
+    تفعيل/تعطيل/حذف + كشف نوع الباك وإصداره.
+  - **Deploy للجو اللعبة**: بيفتح ملف الباك الأصلي (FileProvider) بـ `ACTION_VIEW` —
+    نفس الطريقة اللي اللعبة نفسها بتستورد بيها الإضافات، **بدون روت وبدون injection**
+    (Flarial-style injection متعذّرة على أندرويد من غير روت).
+  - **تشغيل اللعبة**: بيحاول يشغّل `com.mojang.minecraftpe` مباشرة، ولو مش مثبّت
+    بيرمّي بيك لصفحة اللعبة في **Play Store**.
 - **حسابات Offline** — UUID بـ name-hash (معيار MultiMC).
 - **واجهة عربية/إنجليزية** RTL، ثيمين (Venom بنفسجي / Toxic أخضر)، شاشة كونسول حي.
 
@@ -65,7 +83,8 @@ android/app/src/main/java/com/venom/vclient/
 │   ├── JavaLaunch.kt     بناء أمر JVM (modern + legacy formats)
 │   ├── ZipExtractor.kt   استخراج natives
 │   ├── TermuxBridge.kt   تسليم أمر التشغيل لـ Termux
-│   ├── Pipeline.kt       آلة حالات التشغيل (jobs + stages)
+│   ├── Bedrock.kt        بيئت بيّدروك المعزولة: install/registry/deploy/launch
+│   ├── Pipeline.kt       آلة حالات التشغيل (jobs + stages: vengine/minecraft/bedrock)
 │   └── engine/VEngine.kt المحرك الداخلي
 └── ui/                   Compose UI (6 شاشات + ثيم + strings ar/en)
 ```

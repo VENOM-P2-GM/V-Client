@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.venom.vclient.core.Bedrock
 import com.venom.vclient.core.Job
 import com.venom.vclient.core.Mojang
 import com.venom.vclient.core.Net
@@ -86,6 +87,8 @@ fun HomeScreen(repos: Repos) {
                     listOf("latest")
                 }
             }
+        } else if (engine == "bedrock") {
+            versions = listOf("latest")
         } else {
             versions = listOf("1.1.0", "1.0.0")
         }
@@ -136,7 +139,13 @@ fun HomeScreen(repos: Repos) {
                     )
                     if (profile != null) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 12.dp)) {
-                            VChip(if (profile.engine == "minecraft") t("engine.mine") else t("engine.demo"))
+                            VChip(
+                                when (profile.engine) {
+                                    "minecraft" -> t("engine.mine")
+                                    "bedrock" -> t("engine.bedrock")
+                                    else -> t("engine.demo")
+                                }
+                            )
                             VChip(
                                 t("home.lastLaunch") + ": " +
                                     (if (profile.lastLaunch != null) dateFormat.format(Date(profile.lastLaunch)) else t("home.never")),
@@ -170,10 +179,10 @@ fun HomeScreen(repos: Repos) {
                             fontSize = 12.sp,
                             modifier = Modifier.padding(top = 6.dp)
                         )
-                        val order = if (j.engine == "minecraft") {
-                            listOf("validate", "environment", "manifest", "version", "libraries", "client", "assets", "natives", "session", "launch", "running")
-                        } else {
-                            listOf("validate", "environment", "install", "session", "launch", "running")
+                        val order = when (j.engine) {
+                            "bedrock" -> listOf("validate", "environment", "packs", "config", "session", "ready")
+                            "minecraft" -> listOf("validate", "environment", "manifest", "version", "libraries", "client", "assets", "natives", "session", "launch", "running")
+                            else -> listOf("validate", "environment", "install", "session", "launch", "running")
                         }
                         Text(
                             order.joinToString("  ←  ") { s ->
@@ -205,6 +214,34 @@ fun HomeScreen(repos: Repos) {
                                 color = Color(0xFFA1A1AA),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(top = 10.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        val lastJob = jobs.lastOrNull()
+        if (activeJob == null && lastJob != null && lastJob.status == "ready") {
+            item {
+                VCard(modifier = Modifier.background(Color(0x1422C55E), RoundedCornerShape(14.dp))) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Column(Modifier.weight(1f)) {
+                                Text(t("home.bedrockReady"), color = Color(0xFF22C55E), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(t("home.bedrockHint"), color = Color(0xFF71717A), fontSize = 11.sp)
+                            }
+                            VButton(t("home.openMc")) {
+                                val ctx2 = LocalContext.current
+                                if (!Bedrock.openMinecraft(ctx2)) Bedrock.openMarket(ctx2)
+                            }
+                        }
+                        if (!remember { Bedrock.isMinecraftInstalled(LocalContext.current) }) {
+                            Text(
+                                "⚠ " + t("home.mcMissing"),
+                                color = Color(0xFFF59E0B),
+                                fontSize = 11.sp,
+                                modifier = Modifier.padding(top = 8.dp)
                             )
                         }
                     }

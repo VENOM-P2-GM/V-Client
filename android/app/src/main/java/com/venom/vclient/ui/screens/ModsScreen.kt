@@ -1,5 +1,6 @@
 package com.venom.vclient.ui.screens
 
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -9,11 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.UploadFile
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -33,6 +35,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.venom.vclient.core.Bedrock
 import com.venom.vclient.core.Paths
 import com.venom.vclient.ui.Picker
 import com.venom.vclient.ui.Repos
@@ -47,7 +50,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import android.provider.OpenableColumns
 
 @Composable
 fun ModsScreen(repos: Repos) {
@@ -58,31 +60,46 @@ fun ModsScreen(repos: Repos) {
     val profiles = remember(tick) { repos.profiles.list() }
     var profileId by rememberSaveable { mutableStateOf("") }
     val profile = profiles.firstOrNull { it.id == profileId } ?: profiles.firstOrNull()
-    val modsDir = if (profile != null) File(Paths.profileDir(ctx, profile.id), "mods") else null
-    val mods = remember(tick, profile?.id) {
-        if (modsDir == null) emptyList<File>()
-        else modsDir.listFiles()?.filter { it.isFile }?.sortedBy { it.name } ?: emptyList()
-    }
+    val isBedrock = profile?.engine == "bedrock"
+    var lastMsg by remember { mutableStateOf("") }
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-        val dir = modsDir
-        if (profile == null || dir == null || uris.isEmpty()) return@rememberLauncherForActivityResult
+        if (profile == null || uris.isEmpty()) return@rememberLauncherForActivityResult
+        val p = profile
         CoroutineScope(Dispatchers.Main).launch {
             withContext(Dispatchers.IO) {
+                val env = Paths.envOf(Paths.profileDir(ctx, p.id))
+                val cacheDir = File(ctx.cacheDir, "uploads").apply { mkdirs() }
                 for (uri in uris) {
-                    val raw = queryName(ctx, uri) ?: "mod.jar"
-                    val safe = File(raw).name.replace(Regex("[\\\\/:*?\"<>|]"), "_").ifBlank { "mod.jar" }
-                    val dest = File(dir, safe)
+                    val raw = queryName(ctx, uri) ?: "upload"
+                    val safe = File(raw).name.replace(Regex("[\\\\/:*?\"<>|]"), "_").ifBlank { "upload" }
+                    val tmp = File(cacheDir, safe)
                     try {
-                        ctx.contentResolver.openInputStream(uri)?.use { ins ->
-                            dest.outputStream().use { ins.copyTo(it) }
+                        ctx.contentResolver.openInputStream(uri)?.use { ins -> tmp.outputStream().use { ins.copyTo(it) } }
+                        if (isBedrock) {
+                            Bedrock.installPacks(env, tmp) { msg -> runOnUiThread { lastMsg = msg } }
+                        } else {
+                            val modsDir = File(env.mods).apply { mkdirs() }
+                            tmp.copyTo(File(modsDir, safe), overwrite = true)
                         }
-                    } catch (_: Exception) {
+                        tmp.delete()
+                    } catch (e: Exception) {
+                        lastMsg = "⚠ $safe: ${e.message}"
                     }
                 }
             }
             tick++
         }
+    }
+
+    // vengine mods / bedrock packs
+    val env = if (profile != null) Paths.envOf(Paths.profileDir(ctx, profile.id)) else null
+    val vMods: List<File> = remember(tick, profile?.id) {
+        if (!isBedrock && env != null) env.mods.listFiles()?.filter { it.isFile }?.sortedBy { it.name } ?: emptyList()
+        else emptyList()
+    }
+    val bPacks: List<Bedrock.Pack> = remember(tick, profile?.id) {
+        if (isBedrock && env != null) Bedrock.listPacks(env) else emptyList()
     }
 
     LazyColumn(
@@ -92,8 +109,13 @@ fun ModsScreen(repos: Repos) {
     ) {
         item {
             Column {
-                Text(t("mods.title"), fontWeight = FontWeight.Black, fontSize = 22.sp)
-                Text(t("mods.note"), color = Color(0xFFA1A1AA), fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                Text(if (isBedrock) t("mods.packs") else t("mods.title"), fontWeight = FontWeight.Black, fontSize = 22.sp)
+                Text(
+                    if (isBedrock) t("mods.packsNote") else t("mods.note"),
+                    color = Color(0xFFA1A1AA),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
         }
         item {
@@ -104,53 +126,118 @@ fun ModsScreen(repos: Repos) {
                     { sel -> profileId = profiles.firstOrNull { it.name == sel }?.id ?: "" },
                     Modifier.weight(1f)
                 )
-                VGhostButton(t("mods.upload")) { launcher.launch(arrayOf("*/*")) }
+                VGhostButton(if (isBedrock) t("mods.uploadPack") else t("mods.upload")) {
+                    launcher.launch(arrayOf("*/*"))
+                }
             }
         }
-        if (mods.isEmpty()) {
-            item { VEmpty(t("mods.empty"), t("mods.emptyDesc")) }
+        if (lastMsg.isNotBlank()) {
+            item { Text(lastMsg, color = Color(0xFFA3E635), fontSize = 11.sp, fontFamily = FontFamily.Monospace) }
         }
-        items(mods) { f ->
-            val disabled = f.name.endsWith(".disabled")
-            VCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(f.name.removeSuffix(".disabled"), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text(
-                            humanSize(f.length()) + " · " + (if (disabled) t("mods.disabled") else t("mods.enabled")),
-                            color = Color(0xFF71717A),
-                            fontSize = 11.sp
-                        )
-                    }
-                    Switch(
-                        checked = !disabled,
-                        onCheckedChange = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                withContext(Dispatchers.IO) {
-                                    val to = File(f.parentFile, if (disabled) f.name.removeSuffix(".disabled") else f.name + ".disabled")
-                                    f.renameTo(to)
-                                }
-                                tick++
+
+        if (isBedrock) {
+            if (bPacks.isEmpty()) {
+                item { VEmpty(t("mods.empty"), t("mods.emptyDesc")) }
+            }
+            items(bPacks) { pk ->
+                VCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(pk.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                VChip(t("mods." + pk.type), Modifier.padding(end = 6.dp))
+                                Text("v" + pk.version, color = Color(0xFF71717A), fontSize = 10.sp)
                             }
                         }
-                    )
-                    Icon(
-                        Icons.Outlined.Delete,
-                        null,
-                        tint = Color(0xFF71717A),
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .clickable {
+                        Switch(
+                            checked = pk.enabled,
+                            onCheckedChange = {
+                                if (env != null) Bedrock.setEnabled(env, pk.uuid, it)
+                                tick++
+                            }
+                        )
+                        Icon(
+                            Icons.Outlined.Send,
+                            t("mods.deploy"),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(20.dp)
+                                .clickable {
+                                    val e = env ?: return@clickable
+                                    val uri = Bedrock.deployUri(ctx, e, pk)
+                                    if (uri == null) lastMsg = "⚠ no raw file for this pack"
+                                    else if (!Bedrock.openWithMinecraft(ctx, uri)) lastMsg = "⚠ Minecraft not available"
+                                }
+                        )
+                        Icon(
+                            Icons.Outlined.Delete,
+                            t("mods.remove"),
+                            tint = Color(0xFF71717A),
+                            modifier = Modifier
+                                .padding(start = 10.dp)
+                                .size(20.dp)
+                                .clickable {
+                                    val e = env ?: return@clickable
+                                    Bedrock.removePack(e, pk.uuid)
+                                    tick++
+                                }
+                        )
+                    }
+                }
+            }
+        } else {
+            if (vMods.isEmpty()) {
+                item { VEmpty(t("mods.empty"), t("mods.emptyDesc")) }
+            }
+            items(vMods) { f ->
+                val disabled = f.name.endsWith(".disabled")
+                VCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(f.name.removeSuffix(".disabled"), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text(
+                                humanSize(f.length()) + " · " + (if (disabled) t("mods.disabled") else t("mods.enabled")),
+                                color = Color(0xFF71717A),
+                                fontSize = 11.sp
+                            )
+                        }
+                        Switch(
+                            checked = !disabled,
+                            onCheckedChange = {
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    withContext(Dispatchers.IO) { f.delete() }
+                                    withContext(Dispatchers.IO) {
+                                        val to = File(f.parentFile, if (disabled) f.name.removeSuffix(".disabled") else f.name + ".disabled")
+                                        f.renameTo(to)
+                                    }
                                     tick++
                                 }
                             }
-                    )
+                        )
+                        Icon(
+                            Icons.Outlined.Delete,
+                            t("mods.remove"),
+                            tint = Color(0xFF71717A),
+                            modifier = Modifier
+                                .padding(start = 10.dp)
+                                .size(20.dp)
+                                .clickable {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        withContext(Dispatchers.IO) { f.delete() }
+                                        tick++
+                                    }
+                                }
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+private fun runOnUiThread(block: () -> Unit) {
+    val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    handler.post(block)
 }
 
 private fun queryName(ctx: android.content.Context, uri: android.net.Uri): String? {

@@ -56,6 +56,21 @@ import kotlin.io.walkTopDown
 private fun File.du(): Long = walkTopDown().filter { it.isFile }.sumOf { it.length() }
 
 @Composable
+private fun RowScope.EnginePill(label: String, selected: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .weight(1f)
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color(0x0AFFFFFF))
+            .border(1.dp, if (selected) MaterialTheme.colorScheme.primary else Color(0x1AFFFFFF), RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(10.dp)
+    ) {
+        Text(label, fontWeight = FontWeight.Bold, fontSize = 11.sp, maxLines = 2)
+    }
+}
+
+@Composable
 fun ProfilesScreen(repos: Repos) {
     val lang = repos.settings.language
     val t: (String) -> String = { S.t(lang, it) }
@@ -135,21 +150,18 @@ fun ProfilesScreen(repos: Repos) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(name, onValueChange = { name = it }, label = { Text(t("profiles.name")) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("vengine" to t("profiles.vengineName"), "minecraft" to t("profiles.minecraftName")).forEach { (id, label) ->
-                            Box(
-                                Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (engine == id) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color(0x0AFFFFFF))
-                                    .border(1.dp, if (engine == id) MaterialTheme.colorScheme.primary else Color(0x1AFFFFFF), RoundedCornerShape(10.dp))
-                                    .clickable {
-                                        engine = id
-                                        version = if (id == "vengine") "1.1.0" else "latest"
-                                    }
-                                    .padding(10.dp)
-                            ) {
-                                Text(label, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            EnginePill(t("profiles.vengineName"), engine == "vengine") {
+                                engine = "vengine"; version = "1.1.0"
+                            }
+                            EnginePill(t("profiles.minecraftName"), engine == "minecraft") {
+                                engine = "minecraft"; version = "latest"
+                            }
+                        }
+                        Row {
+                            EnginePill(t("profiles.bedrockName"), engine == "bedrock") {
+                                engine = "bedrock"; version = "latest"
                             }
                         }
                     }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
@@ -75,7 +76,7 @@ class Job(val id: String, val profileId: String, val engine: String, val version
     }
 
     companion object {
-        val FINISHED = listOf("stopped", "error", "cancelled", "dryrun")
+        val FINISHED = listOf("stopped", "error", "cancelled", "dryrun", "ready")
         val ACTIVE = listOf("queued", "preparing", "launching", "running")
     }
 }
@@ -135,8 +136,11 @@ object Pipeline {
                 env.ensure()
                 ProfilesRepository(ctx).touchLaunch(profile.id)
                 job.stage("validate", 3, "checking profile and account")
-                if (job.engine == "vengine") runVEngine(job, env, profile, account, version)
-                else runMinecraft(ctx, job, env, profile, account, version)
+                when (job.engine) {
+                    "vengine" -> runVEngine(job, env, profile, account, version)
+                    "bedrock" -> runBedrock(ctx, job, env, profile, account, version)
+                    else -> runMinecraft(ctx, job, env, profile, account, version)
+                }
             } catch (e: Exception) {
                 if (job.cancelled) {
                     job.finish("cancelled")
@@ -199,6 +203,65 @@ object Pipeline {
                 put("createdAt", System.currentTimeMillis())
             }
         )
+    }
+
+    private fun runBedrock(ctx: Context, job: Job, env: EnvPaths, profile: Profile, account: Account, version: String) {
+        job.log("[V Client] profile \"${profile.name}\" → isolated bedrock environment: ${env.root.absolutePath}")
+        job.stage("environment", 15, "preparing isolated environment")
+        val bd = Bedrock.bedrockDir(env)
+        File(bd, "behavior_packs").mkdirs()
+        File(bd, "resource_packs").mkdirs()
+        File(bd, "addons").mkdirs()
+        File(bd, "templates").mkdirs()
+        File(bd, "config").mkdirs()
+
+        val packs = Bedrock.listPacks(env)
+        job.log("[bedrock] ${packs.count { it.enabled }} enabled pack(s) in the isolated environment")
+        job.stage("packs", 40, "validating packs")
+        for (p in packs) {
+            val dir = File(Bedrock.packsDir(env, p.type), p.uuid)
+            val ok = File(dir, "manifest.json").isFile
+            job.log("[bedrock] ${p.name} (${p.type} v${p.version}) " + (if (ok) "✓" else "✗ missing manifest"))
+            if (!ok) throw IllegalStateException("pack ${p.name} is incomplete — remove it and upload it again")
+        }
+        if (packs.isEmpty()) {
+            job.log("[bedrock] no packs yet — upload .mcaddon/.mcpack files from the Packs screen")
+        }
+
+        job.stage("config", 65, "writing level config")
+        Json.write(
+            File(bd, "config/game.json"),
+            JSONObject().apply {
+                put("profile", profile.name)
+                put("version", version)
+                put("isolated", true)
+                put(
+                    "behaviorPacks",
+                    JSONArray().apply {
+                        packs.filter { it.type == "behavior" && it.enabled }.forEach { put(it.uuid) }
+                    }
+                )
+                put(
+                    "resourcePacks",
+                    JSONArray().apply {
+                        packs.filter { it.type == "resource" && it.enabled }.forEach { put(it.uuid) }
+                    }
+                )
+                put("generatedAt", System.currentTimeMillis())
+            }
+        )
+
+        job.stage("session", 80, "writing isolated session")
+        writeSession(env, account)
+
+        job.stage("ready", 100, "environment ready")
+        val mc = Bedrock.isMinecraftInstalled(ctx)
+        job.log(
+            "[bedrock] Minecraft Bedrock " +
+                (if (mc) "installed — deploy the packs from the Packs screen, then play" else "NOT installed — install it from the Play Store first")
+        )
+        if (!mc) job.state.update { it.copy(error = "MINECRAFT_NOT_INSTALLED") }
+        job.finish("ready")
     }
 
     private fun runMinecraft(ctx: Context, job: Job, env: EnvPaths, profile: Profile, account: Account, version: String) {

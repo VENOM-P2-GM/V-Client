@@ -131,7 +131,25 @@ object S {
         "common.error" to "خطأ",
 
         "engine.mine" to "Minecraft Java",
-        "engine.demo" to "V-Engine"
+        "engine.demo" to "V-Engine",
+        "engine.bedrock" to "Minecraft Bedrock",
+        "profiles.bedrockName" to "ماينكرافت بيدروك",
+        "profiles.bedrockDesc" to "باكز معزولة (behavior/resource) + deploy للجو اللعبة",
+        "stage.packs" to "الباكز",
+        "stage.config" to "إعدادات المستوى",
+        "stage.ready" to "جاهز",
+        "home.bedrockReady" to "بيئة بيدروك جاهزة",
+        "home.bedrockHint" to "Deploy الباكات من شاشة Packs (بتتفتح جوه ماينكرافت) وبعدين العب",
+        "home.openMc" to "افتح ماينكرافت",
+        "home.mcMissing" to "ماينكرافت بيدروك مش مثبّت — ثبّته من Play Store",
+        "mods.packs" to "Packs",
+        "mods.packsNote" to "الباكز بتتوضع جوه بيئة البروفايل المعزولة (bedrock/) — deploy بتبعتها للجو اللعبة",
+        "mods.uploadPack" to "رفع باك",
+        "mods.deploy" to "Deploy للجو اللعبة",
+        "mods.deployHint" "افتح اللعبة وهيستورد الباك",
+        "mods.behavior" to "Behavior",
+        "mods.resource" to "Resource",
+        "mods.template" to "Template"
     )
 
     private val en = mapOf(
@@ -263,7 +281,25 @@ object S {
         "common.error" to "Error",
 
         "engine.mine" to "Minecraft Java",
-        "engine.demo" to "V-Engine"
+        "engine.demo" to "V-Engine",
+        "engine.bedrock" to "Minecraft Bedrock",
+        "profiles.bedrockName" to "Minecraft Bedrock",
+        "profiles.bedrockDesc" to "Isolated packs (behavior/resource) + deploy to the game",
+        "stage.packs" to "packs",
+        "stage.config" to "level config",
+        "stage.ready" to "ready",
+        "home.bedrockReady" to "Bedrock environment ready",
+        "home.bedrockHint" to "Deploy packs from the Packs screen (they open inside Minecraft), then play",
+        "home.openMc" to "Open Minecraft",
+        "home.mcMissing" to "Minecraft Bedrock is not installed — install it from the Play Store",
+        "mods.packs" to "Packs",
+        "mods.packsNote" to "Packs live inside the profile’s isolated environment (bedrock/) — deploy sends them to the game",
+        "mods.uploadPack" to "Upload pack",
+        "mods.deploy" to "Deploy to the game",
+        "mods.deployHint" to "Opens the pack inside Minecraft for import",
+        "mods.behavior" to "Behavior",
+        "mods.resource" to "Resource",
+        "mods.template" to "Template"
     )
 
     fun t(lang: String, key: String): String =
