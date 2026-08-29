@@ -9,7 +9,6 @@ import dev.vclient.core.hud.HudTexts
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.TextSetting
-import dev.vclient.core.settings.settingOf
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -23,7 +22,7 @@ class ClockModule : HudModule(ID, NAME, "Device clock with optional seconds and 
     private val showDate by settingOf(BoolSetting("show_date", "Date", false))
     private val prefix by settingOf(TextSetting("prefix", "Prefix", "", "Optional text before the time."))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

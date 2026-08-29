@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <numbers>
 
 #include "Math.hpp"
 
@@ -35,11 +36,11 @@ inline WaypointResult projectWaypoint(
     const double dz = tz - pz;
     r.distance = std::sqrt(dx * dx + dz * dz);
 
-    const double yaw = yawDeg * M_PI / 180.0;
-    const double pitch = pitchDeg * M_PI / 180.0;
+    const double yaw = yawDeg * std::numbers::pi / 180.0;
+    const double pitch = pitchDeg * std::numbers::pi / 180.0;
 
     // Relative bearing for the direction arrow.
-    const double targetYaw = std::atan2(-dx, dz) * 180.0 / M_PI;
+    const double targetYaw = std::atan2(-dx, dz) * 180.0 / std::numbers::pi;
     r.bearingDeg = static_cast<float>(wrapDegrees(targetYaw - yawDeg));
 
     // Camera basis.
@@ -60,7 +61,7 @@ inline WaypointResult projectWaypoint(
     const double cy = dx * ux + dy * uy + dz * uz;
 
     const double aspect = screenW / (screenH > 0.0 ? screenH : 1.0);
-    const double tanHalfH = std::tan(fovHDeg * M_PI / 180.0 / 2.0);
+    const double tanHalfH = std::tan(fovHDeg * std::numbers::pi / 180.0 / 2.0);
     const double tanHalfV = tanHalfH / aspect;
 
     const double ndcX = cx / (cz * tanHalfH);

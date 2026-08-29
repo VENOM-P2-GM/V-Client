@@ -9,6 +9,7 @@
 #include <android/log.h>
 #include <cmath>
 #include <cstring>
+#include <ctime>
 #include <string>
 
 #include "vclient/Bridge.hpp"

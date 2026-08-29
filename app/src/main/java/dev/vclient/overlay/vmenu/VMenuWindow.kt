@@ -71,6 +71,7 @@ class VMenuWindow(private val context: Context) {
 
     private fun addBackdrop(onOutsideTap: () -> Unit) {
         val dimOnly = !core.settings.vmenuBlurBackdrop || Build.VERSION.SDK_INT < 31
+        val density = context.resources.displayMetrics.density
         val view = View(context).apply {
             setOnTouchListener { _, event ->
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) onOutsideTap()
@@ -91,7 +92,7 @@ class VMenuWindow(private val context: Context) {
             if (!dimOnly && Build.VERSION.SDK_INT >= 31) {
                 @Suppress("DEPRECATION")
                 flags = flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-                setBlurBehindRadius((20 * resources.displayMetrics.density).toInt())
+                setBlurBehindRadius((20 * density).toInt())
             }
         }
         windowManager.addView(view, params)

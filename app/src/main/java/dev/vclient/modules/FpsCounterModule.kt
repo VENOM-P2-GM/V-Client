@@ -8,7 +8,6 @@ import dev.vclient.core.hud.HudFrame
 import dev.vclient.core.hud.HudTexts
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
-import dev.vclient.core.settings.settingOf
 import java.util.Locale
 
 /**
@@ -27,7 +26,7 @@ class FpsCounterModule : HudModule(ID, NAME, "Live FPS and frame-time statistics
         BoolSetting("color_by_fps", "Color by FPS", true, "Green ≥ 55, amber ≥ 30, red below.")
     )
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

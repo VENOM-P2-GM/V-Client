@@ -73,7 +73,7 @@ class SignatureManager(
             pkg = MC_PACKAGE,
             digest = digest,
             trustedAtMs = now,
-            versionsSeen = ((existing?.versionsSeen ?: emptyList()) + currentVersion()).distinct(),
+            versionsSeen = ((existing?.versionsSeen ?: emptyList()) + listOfNotNull(currentVersion())).distinct(),
         )
         IsolatedPaths.atomicWrite(
             trustFile,
@@ -121,7 +121,7 @@ class SignatureManager(
             )
         }.also {
             if (it.state == SignatureState.MISMATCH) {
-                logger.w(TAG, "Signature mismatch for $MC_PACKAGE! trusted=${entry.digest} actual=$digest")
+                logger.w(TAG, "Signature mismatch for $MC_PACKAGE! trusted=${entry?.digest} actual=$digest")
             }
         }
     }

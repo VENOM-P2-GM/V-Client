@@ -5,7 +5,6 @@ import dev.vclient.core.module.ModuleCategory
 import dev.vclient.core.runtime.ClientHooks
 import dev.vclient.core.settings.ColorSetting
 import dev.vclient.core.settings.FloatSetting
-import dev.vclient.core.settings.settingOf
 
 /**
  * Fullbright — a light overlay filter that lifts perceived screen brightness

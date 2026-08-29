@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.MagnificationConfig
 import dev.vclient.core.VClientCore
 import dev.vclient.core.game.GameLauncher
 import dev.vclient.core.game.InputTracker
@@ -52,8 +53,7 @@ class VAccessibilityService : AccessibilityService() {
         }
     }
 
-    override fun onMotionEvent(event: MotionEvent?) {
-        event ?: return
+    override fun onMotionEvent(event: MotionEvent) {
         val width = resources.displayMetrics.widthPixels.toFloat()
         InputTracker.onMotion(event, width)
     }
@@ -71,7 +71,20 @@ class VAccessibilityService : AccessibilityService() {
 
     fun magnify(scale: Float, centerX: Float, centerY: Float, animate: Boolean) {
         val controller = magnificationController
-        controller.setScaleAndCenter(scale, centerX, centerY, animate)
+        if (Build.VERSION.SDK_INT >= 33) {
+            val config = MagnificationConfig.Builder()
+                .setMode(MagnificationConfig.MAGNIFICATION_MODE_FULLSCREEN)
+                .setScale(scale)
+                .setCenterX(centerX)
+                .setCenterY(centerY)
+                .build()
+            controller.setMagnificationConfig(config, animate)
+        } else {
+            @Suppress("DEPRECATION")
+            controller.setScale(scale, animate)
+            @Suppress("DEPRECATION")
+            controller.setCenter(centerX, centerY, animate)
+        }
     }
 
     fun resetMagnification(animate: Boolean) {

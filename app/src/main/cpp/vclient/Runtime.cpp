@@ -1,5 +1,6 @@
 #include "Runtime.hpp"
 
+#include <cerrno>
 #include <sys/stat.h>
 
 #include <string>

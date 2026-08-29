@@ -38,7 +38,7 @@ class ModuleManager(private val logger: VLogger) {
     fun register(module: Module) {
         check(byId(module.id) == null) { "Module id already registered: ${module.id}" }
         modules.add(module)
-        modules.sortBy { it.category.ordinal * 1000 + it.name }
+        modules.sortWith(compareBy({ it.category.ordinal }, { it.name }))
         // Setting changes funnel into the same "module changed" pipeline
         // (auto-save + overlay reactions) as enable/disable toggles.
         module.settings.all.forEach { setting ->

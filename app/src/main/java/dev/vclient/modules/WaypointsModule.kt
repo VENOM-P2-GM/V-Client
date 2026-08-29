@@ -13,7 +13,6 @@ import dev.vclient.core.module.ModuleCategory
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.IntSetting
-import dev.vclient.core.settings.settingOf
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.sqrt
@@ -35,7 +34,7 @@ class WaypointsModule : HudModule(
     private val showCoords by settingOf(BoolSetting("show_coords", "Coordinates", false))
     private val horizontalOnly by settingOf(BoolSetting("horizontal_only", "Ignore height", true, "Horizontal distance only."))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private data class Row(val waypoint: WaypointDto, val distance: Double, val bearing: Float?)
 

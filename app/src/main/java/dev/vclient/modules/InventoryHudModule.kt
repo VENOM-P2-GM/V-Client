@@ -10,7 +10,6 @@ import dev.vclient.core.hud.HudRender
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.IntSetting
-import dev.vclient.core.settings.settingOf
 
 /** Inventory HUD — compact configurable grid of inventory tiles. */
 class InventoryHudModule : HudModule(ID, NAME, "Shows your hotbar/inventory items as a compact grid.") {
@@ -21,7 +20,7 @@ class InventoryHudModule : HudModule(ID, NAME, "Shows your hotbar/inventory item
     private val showCounts by settingOf(BoolSetting("show_counts", "Show counts", true))
     private val showEmpty by settingOf(BoolSetting("show_empty", "Empty slots", true, "Dimmed placeholders."))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

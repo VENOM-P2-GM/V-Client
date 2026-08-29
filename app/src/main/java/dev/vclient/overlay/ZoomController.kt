@@ -102,7 +102,9 @@ class ZoomController(
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            marginEnd = (8 * density).toInt()
+            // Negative x offsets from the END edge (WindowManager.LayoutParams
+            // has no marginEnd like ViewGroup.MarginLayoutParams).
+            x = -(8 * density).toInt()
         }
         runCatching { windowManager.addView(button, params) }.onFailure {
             logger.e(TAG, "Failed to add zoom button", it)

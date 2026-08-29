@@ -5,7 +5,6 @@ import dev.vclient.core.module.ModuleCategory
 import dev.vclient.core.runtime.ClientHooks
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.FloatSetting
-import dev.vclient.core.settings.settingOf
 
 /**
  * Zoom — magnifies the screen through the accessibility magnification
