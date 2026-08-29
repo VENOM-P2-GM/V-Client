@@ -24,6 +24,7 @@
 #define ALOG(level, ...) __android_log_print(level, LOG_TAG, __VA_ARGS__)
 
 using vc::Logger;
+using vc::MotionBlurModel;
 using vc::Runtime;
 
 namespace {

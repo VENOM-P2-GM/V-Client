@@ -5,8 +5,8 @@ import android.hardware.input.InputManager
 import android.os.Build
 import android.view.InputDevice
 import android.view.MotionEvent
+import android.accessibilityservice.MagnificationConfig
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.MagnificationConfig
 import dev.vclient.core.VClientCore
 import dev.vclient.core.game.GameLauncher
 import dev.vclient.core.game.InputTracker
