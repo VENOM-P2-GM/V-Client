@@ -9,7 +9,6 @@ import dev.vclient.core.hud.HudRender
 import dev.vclient.core.hud.HudTexts
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
-import dev.vclient.core.settings.settingOf
 
 /** Potion HUD — active effects with remaining duration. */
 class PotionHudModule : HudModule(ID, NAME, "Active potion effects and their remaining time.") {
@@ -18,7 +17,7 @@ class PotionHudModule : HudModule(ID, NAME, "Active potion effects and their rem
     private val showDuration by settingOf(BoolSetting("show_duration", "Remaining time", true))
     private val sortByTime by settingOf(BoolSetting("sort_by_time", "Sort by time left", true))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     override fun onTick(ctx: dev.vclient.core.module.TickContext) {
         // Effects come straight from the state snapshot each frame.

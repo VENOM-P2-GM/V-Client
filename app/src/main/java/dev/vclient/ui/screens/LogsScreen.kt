@@ -65,7 +65,7 @@ fun LogsScreen(nav: NavController) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             FilterChip(selected = selectedFile == null, onClick = { selectedFile = null }, label = { Text("Live") })
-            items.take(4).forEach { file ->
+            files.take(4).forEach { file ->
                 FilterChip(
                     selected = selectedFile == file.name,
                     onClick = { selectedFile = file.name },
@@ -83,7 +83,7 @@ fun LogsScreen(nav: NavController) {
                             context.startActivity(
                                 Intent(Intent.ACTION_SEND)
                                     .setType("text/plain")
-                                    .putExtra(Intent.EXTRA_TEXT, readTail(target, 2000))
+                                    .putExtra(Intent.EXTRA_TEXT, readTail(target, 2000).joinToString("\n"))
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             )
                         }

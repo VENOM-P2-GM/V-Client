@@ -10,7 +10,6 @@ import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.IntSetting
 import dev.vclient.core.settings.ModeSetting
-import dev.vclient.core.settings.settingOf
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -28,7 +27,7 @@ class CoordinatesModule : HudModule(ID, NAME, "Shows your X/Y/Z position, dimens
         ModeSetting("position_mode", "Position format", listOf("X Y Z", "XYZ"), "X Y Z")
     )
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

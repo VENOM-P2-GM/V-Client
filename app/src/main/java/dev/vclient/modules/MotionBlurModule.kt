@@ -5,7 +5,6 @@ import dev.vclient.core.module.ModuleCategory
 import dev.vclient.core.runtime.ClientHooks
 import dev.vclient.core.settings.FloatSetting
 import dev.vclient.core.settings.IntSetting
-import dev.vclient.core.settings.settingOf
 
 /**
  * Motion Blur — device-motion-driven blur of the screen behind a

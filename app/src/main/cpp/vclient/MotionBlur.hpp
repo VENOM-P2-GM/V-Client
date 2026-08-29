@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "Math.hpp"
+
 namespace vc {
 
 /**

@@ -2,6 +2,8 @@ package dev.vclient.modules
 
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.BatteryManager
 import android.graphics.Canvas
 import android.graphics.RectF
@@ -13,7 +15,6 @@ import dev.vclient.core.hud.HudTexts
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.module.TickContext
 import dev.vclient.core.settings.BoolSetting
-import dev.vclient.core.settings.settingOf
 import java.io.File
 import java.util.Locale
 
@@ -54,17 +55,21 @@ class PerformanceHudModule : HudModule(ID, NAME, "CPU, memory, battery and frame
             appMemMb = (android.os.Debug.getNativeHeapAllocatedSize() / (1024f * 1024f)).toInt()
         }
         if (showBattery) {
-            val bm = context.getSystemService(BatteryManager::class.java)
-            if (bm != null) {
-                val temp = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_TEMPERATURE)
+            // BatteryManager exposes no BATTERY_PROPERTY_TEMPERATURE property —
+            // temperature (and the level/scale pair) comes from the sticky
+            // ACTION_BATTERY_CHANGED broadcast instead.
+            val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            if (batteryIntent != null) {
+                val temp = batteryIntent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE)
                 if (temp != Int.MIN_VALUE) batteryTemp = temp / 10f
-                val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-                if (level != Int.MIN_VALUE) batteryLevel = level
+                val level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, Int.MIN_VALUE)
+                val scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, Int.MIN_VALUE)
+                if (level != Int.MIN_VALUE && scale > 0) batteryLevel = level * 100 / scale
             }
         }
     }
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

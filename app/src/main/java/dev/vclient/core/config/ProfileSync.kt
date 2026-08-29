@@ -21,7 +21,7 @@ object ProfileSync {
             ModuleStateDto(
                 id = module.id,
                 enabled = module.enabled,
-                settings = module.settings.all.associate { it.id to encodeJson(it) },
+                settings = module.settings.all.associate { it.id to it.encodeJson() },
             )
         }
         val hudLayout = modules.hudModules.map { m: HudModule ->

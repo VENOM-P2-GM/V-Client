@@ -14,7 +14,6 @@ import dev.vclient.core.settings.ColorSetting
 import dev.vclient.core.settings.FloatSetting
 import dev.vclient.core.settings.IntSetting
 import dev.vclient.core.settings.ModeSetting
-import dev.vclient.core.settings.settingOf
 
 /** Crosshair — custom crosshair rendered over the game's default position. */
 class CrosshairModule : HudModule(
@@ -34,7 +33,7 @@ class CrosshairModule : HudModule(
     private val outline by settingOf(BoolSetting("outline", "Outline", true, "Dark outline for visibility."))
     private val opacity by settingOf(FloatSetting("opacity", "Opacity", 1.0f, 0.2f, 1.0f, 0.05f, "", 2))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
         init {

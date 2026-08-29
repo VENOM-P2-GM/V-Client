@@ -210,6 +210,7 @@ fun VMenuSettingsTab() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ManualPositionCard() {
     val core = VClientCore.core

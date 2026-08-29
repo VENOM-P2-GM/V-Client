@@ -11,7 +11,6 @@ import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.ColorSetting
 import dev.vclient.core.settings.IntSetting
-import dev.vclient.core.settings.settingOf
 import java.util.Locale
 
 /**
@@ -30,7 +29,7 @@ class KeystrokesModule : HudModule(ID, NAME, "On-screen keystroke display (WASD,
     private val showMouse by settingOf(BoolSetting("show_mouse", "LMB/RMB with CPS", true))
     private val pressedColor by settingOf(ColorSetting("pressed_color", "Pressed color", 0xFF8B5CF6.toInt()))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

@@ -9,7 +9,6 @@ import dev.vclient.core.hud.HudTexts
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
 import dev.vclient.core.settings.ModeSetting
-import dev.vclient.core.settings.settingOf
 import java.util.Locale
 
 /**
@@ -24,7 +23,7 @@ class CpsCounterModule : HudModule(ID, NAME, "Counts your clicks per second (lef
     )
     private val showPeak by settingOf(BoolSetting("show_peak", "Show peak", false, "Session peak CPS."))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 

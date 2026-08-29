@@ -9,7 +9,6 @@ import dev.vclient.core.hud.HudFrame
 import dev.vclient.core.hud.HudRender
 import dev.vclient.core.module.HudModule
 import dev.vclient.core.settings.BoolSetting
-import dev.vclient.core.settings.settingOf
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -19,7 +18,7 @@ class ArmorHudModule : HudModule(ID, NAME, "Shows your equipped armor and its du
     private val showDurability by settingOf(BoolSetting("show_durability", "Durability", true, "Bar + percentage."))
     private val showEmpty by settingOf(BoolSetting("show_empty", "Empty slots", false, "Render placeholders for missing pieces."))
 
-    override val hud = Element()
+    override val hud: HudElement = Element()
 
     private inner class Element : HudElement(ID) {
 
