@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">V Client</string>
+    <string name="notification_channel_overlay">V Client overlay</string>
+    <string name="notification_channel_overlay_desc">Keeps the V Client HUD alive while Minecraft runs.</string>
+    <string name="overlay_notification_title">V Client is running</string>
+    <string name="overlay_notification_text">HUD overlay active. Tap V Menu to configure modules.</string>
+    <string name="action_open_vmenu">V Menu</string>
+    <string name="action_hud_editor">HUD editor</string>
+    <string name="action_stop">Stop overlay</string>
+    <string name="a11y_service_label">V Client extensions (optional)</string>
+    <string name="a11y_service_description">Optional V Client service. It enables: (1) detecting when Minecraft is focused so the HUD can hide elsewhere, (2) camera-magnification Zoom, (3) on Android 14+, reading raw touch motion so Keystrokes and the CPS counter reflect your real taps. V Client never reads screen content or text.</string>
+</resources>
